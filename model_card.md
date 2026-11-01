@@ -1,180 +1,80 @@
 # 🎧 Model Card: Music Recommender Simulation
 
 ## 1. Model Name  
+VibeMatch 1.0 is a simple music recommendation system that suggests songs based on a user's favorite genre, mood, and energy level.
 
-VibeMatch 1.0
-
-VibeMatch is a simple music recommendation system that helps users discover songs based on their favorite genre, mood, and preferred energy level.
 ---
 
 ## 2. Intended Use  
 
-My recommender is designed to suggest songs that match a user's music preferences. The user provides a favorite genre, preferred mood, and desired energy level. The system compares those preferences with the available songs and recommends the five highest-scoring matches.
+My recommender is designed for classroom learning and demonstrating how content-based filtering works. Users provide their preferred genre, mood, and energy level, and the system recommends the five highest-scoring songs. It is not intended to replace a real streaming platform or accurately predict someone's long-term listening habits.
 
-This project is intended for classroom learning rather than a real music streaming service. It assumes that users can describe their music taste using three basic preferences.
 
 ---
 
 ## 3. How the Model Works  
 
-My recommender uses content-based filtering. Instead of looking at what other people listen to, it compares the characteristics of each song with the user's preferences.
+My recommender uses content-based filtering to compare song features with user preferences. A matching genre adds 2 points, a matching mood adds 1 point, and energy similarity adds up to 1 point using `1 - abs(song_energy - target_energy)`. The maximum score is 4 points. The system scores every song, sorts the results from highest to lowest, and returns the top five with explanations.
 
-The scoring system works as follows:
-
-Genre match: +2 points
-
-Mood match: +1 point
-
-Energy similarity: Up to +1 point
-
-Energy similarity is calculated as:
-
-1.0 - abs(song_energy - target_energy)
-
-The maximum possible score is 4 points.
-
-The system scores all songs, sorts them from highest to lowest, and returns the top five recommendations. It also explains why each song received its score.
 
 ---
 
 ## 4. Data  
 
-My dataset contains 20 fictional songs. The starter dataset originally contained 10 songs, and I added 10 more to increase variety.
+My dataset contains 20 fictional songs. I expanded the original dataset of 10 songs by adding 10 more songs with different genres and moods. Each song includes genre, mood, energy, tempo, valence, danceability, and acousticness. However, the current algorithm only uses genre, mood, and energy. The dataset does not represent every artist, genre, language, or musical style.
 
-The catalog includes pop, lofi, rock, ambient, jazz, synthwave, indie pop, hip hop, R&B, EDM, folk, reggae, and dance pop.
-
-Each song includes genre, mood, energy, tempo, valence, danceability, and acousticness. However, my scoring algorithm currently uses only genre, mood, and energy.
-
-The dataset does not represent every genre, artist, language, or musical style.
 
 
 ---
 
 ## 5. Strengths  
-
-My recommender works well when a user's preferences closely match songs in the dataset.
-
-For example, the High-Energy Pop profile received Sunrise City as its top recommendation with a score of 3.97.
-
-The Chill Lofi profile received Library Rain with a perfect score of 4.00, while the Deep Intense Rock profile received Storm Runner with a score of 3.96.
-
-Another strength is that the system explains its recommendations by showing how each matching feature contributed to the final score.
+The recommender works well when a user's preferences closely match the available songs. For example, Sunrise City ranked first for High-Energy Pop with 3.97, Library Rain ranked first for Chill Lofi with 4.00, and Storm Runner ranked first for Deep Intense Rock with 3.96. Another strength is that the system explains how each song earned its score, making its decisions easier to understand.
 
 
 ---
 
 ## 6. Limitations and Bias 
 
+The system has a small dataset of only 20 fictional songs, and some genres are represented more often than others. It also ignores lyrics, language, listening history, and user feedback. Since genre receives the highest weight, the algorithm may favor genre matches over songs with better energy similarity. For example, Blue Window ranked first for Conflicting Sad Energy even though its energy was much lower than requested. This could create a filter bubble where users repeatedly receive similar types of music. The system does not learn from user behavior.
 
-My recommender has several limitations.
 
-First, it only contains 20 fictional songs, so it cannot represent the full variety of music people listen to. Some genres have more songs than others, which may favor certain preferences.
-
-Second, the algorithm only uses genre, mood, and energy. It does not consider lyrics, language, listening history, or user feedback.
-
-Third, the scoring weights are chosen manually. Giving genre more importance may not work well for users who care more about energy or mood.
-
-For example, the Conflicting Sad Energy profile wanted sad R&B music with high energy. Blue Window ranked first even though its energy was much lower than the user's preference.
-
-The system also does not learn from user behavior.
 ---
 
 ## 7. Evaluation  
 
-I tested the recommender using four user profiles.
+I tested four profiles: High-Energy Pop, Chill Lofi, Deep Intense Rock, and Conflicting Sad Energy. Their top recommendations were Sunrise City (3.97), Library Rain (4.00), Storm Runner (3.96), and Blue Window (3.37). The first three profiles tested different musical preferences, while the fourth tested conflicting preferences. I also ran `python -m pytest -q`, and both automated tests passed.
 
-User Profile
+### Profile Comparisons
 
-Top Recommendation
+High-Energy Pop and Chill Lofi received different top songs because one preferred energetic pop while the other preferred calm lofi. High-Energy Pop and Deep Intense Rock both preferred high energy, but their genre and mood differences led to different first-place songs. High-Energy Pop and Conflicting Sad Energy both had high target energy, but the sad R&B profile ranked Blue Window first because genre and mood outweighed energy.
 
-Original Score
+Chill Lofi and Deep Intense Rock produced different recommendations because they had opposite energy preferences and different genres. Chill Lofi and Conflicting Sad Energy both favored more emotional or relaxed musical characteristics in some songs, but their different genre and energy targets changed the rankings. Deep Intense Rock and Conflicting Sad Energy both wanted high energy, yet Storm Runner ranked first for rock while Blue Window ranked first for sad R&B. This showed that genre and mood strongly influence the recommendations.
 
-High-Energy Pop
+### Scoring Experiment
 
-Sunrise City
+I changed the genre weight from 2 points to 1 point and increased energy similarity from a maximum of 1 point to 2 points. Mood remained worth 1 point.
 
-3.97
+| Profile | Original Top Result | Experimental Top Result |
+|---|---|---|
+| High-Energy Pop | Sunrise City (3.97) | Sunrise City (3.94) |
+| Chill Lofi | Library Rain (4.00) | Library Rain (4.00) |
+| Deep Intense Rock | Storm Runner (3.96) | Storm Runner (3.92) |
+| Conflicting Sad Energy | Blue Window (3.37) | Blue Window (2.74) |
 
-Chill Lofi
+The top recommendation remained the same for every profile, but some lower rankings changed. For High-Energy Pop, Weekend Bounce moved from third to second while Gym Hero dropped from second to fourth. For Conflicting Sad Energy, Desert Lights moved from fourth to third and Quiet Thoughts dropped out of the top five. The experiment showed how manually chosen weights can affect rankings. I restored the original scoring formula afterward.
 
-Library Rain
-
-4.00
-
-Deep Intense Rock
-
-Storm Runner
-
-3.96
-
-Conflicting Sad Energy
-
-Blue Window
-
-3.37
-
-I also ran the automated tests using pytest, and both tests passed.
-
-Scoring Experiment
-
-I changed the algorithm to give genre matches 1 point instead of 2, and energy similarity up to 2 points instead of 1. Mood remained worth 1 point.
-User Profile
-
-Original Top Result
-
-Experimental Top Result
-
-High-Energy Pop
-
-Sunrise City (3.97)
-
-Sunrise City (3.94)
-
-Chill Lofi
-
-Library Rain (4.00)
-
-Library Rain (4.00)
-
-Deep Intense Rock
-
-Storm Runner (3.96)
-
-Storm Runner (3.92)
-
-Conflicting Sad Energy
-
-Blue Window (3.37)
-
-Blue Window (2.74)
-
-The top recommendation stayed the same for all four profiles, but some lower rankings changed.
-
-For High-Energy Pop, Weekend Bounce moved from third to second, while Gym Hero dropped from second to fourth.
-
-For Conflicting Sad Energy, Desert Lights moved from fourth to third, while Quiet Thoughts dropped out of the top five.
-
-This experiment showed that changing feature weights can affect recommendation rankings. After the experiment, I restored the original scoring formula.
 
 
 ---
 
 ## 8. Future Work  
-If I continued improving this project, I would expand the dataset to include more songs, genres, artists, and languages.
+I would expand the dataset to include more songs, genres, artists, and languages. I would also allow users to choose which preferences matter most and include additional features such as danceability, tempo, and acousticness. Another improvement would be collecting user feedback, such as likes and skips, to make recommendations more personalized and diverse.
 
-I would allow users to choose which preferences matter most to them. I would also include danceability, acousticness, and tempo in the scoring system.
-
-Another improvement would be to collect user feedback, such as liking or skipping songs, so the system could improve its recommendations over time.
-
-Finally, I would make the top five recommendations more diverse.
 
 ---
 
 ## 9. Personal Reflection  
-This project helped me understand how music recommendation systems work and how different features influence their results. Before this project, I did not realize how much scoring weights could affect which songs appear at the top.
 
-The most interesting part was testing a user with conflicting preferences. I expected the recommender to prioritize high-energy songs, but it preferred songs that matched the user's genre and mood. This helped me understand that an algorithm can follow its rules correctly while still producing recommendations that may not fully match what a user wants.
+This project helped me understand how recommendation systems use data and scoring rules to generate suggestions. My biggest learning moment was seeing how changing feature weights affected the rankings. I was also surprised that Blue Window ranked first for someone who preferred high-energy sad R&B, even though its energy was much lower than requested. This showed me that an algorithm can follow its rules correctly while still producing recommendations that may not fully match a user's expectations.
 
- I verified the implementation by running the recommender, checking the output for four user profiles, and running the automated tests.
-
-This project changed how I think about music recommendation apps because I now understand that their results depend on the data, features, and decisions made when designing the algorithm.
+I used claude to help like how we were taught in this course. I double-checked the suggestions by running the recommender for four profiles, reviewing the scores, and running the automated tests. In the future, I would expand the dataset, include user feedback, and experiment with additional features to improve the recommendations.
